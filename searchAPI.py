@@ -32,14 +32,14 @@ for line in sys.stdin:
     ok = 1
     search_object = m.group(2)
     search_property = m.group(1)
-    #print (search_object)
-    #print (search_property)
+    print (search_object)
+    print (search_property)
 
     params['search'] = search_object
     json = requests.get(url,params).json()
     for result in json['search']:
         if ok == 1:
-            #print("{}".format(result['id']))
+            print("{}".format(result['id']))
             ok = 0
             query_object = result['id']
     ok = 1
@@ -48,7 +48,7 @@ for line in sys.stdin:
     json = requests.get(url,params).json()
     for result in json['search']:
         if ok == 1:
-            #print("{}".format(result['id']))
+            print("{}".format(result['id']))
             ok = 0
             query_property = result['id']
     query='''
@@ -59,7 +59,18 @@ for line in sys.stdin:
         }
         }
         '''
-    #print(query)
+    print(query)
+
+    # Dictionary which is used to apply the appropriate unit of measure next to
+    # numerical values in the answer output.
+    dictionary_units = {
+        'height':'meters',
+        'area':'km squared',
+        'altitude':'meters',
+        'surface area':'km squared',
+        'radius':'km',
+        'perimeter':'km'     
+    }
 
     url = 'https://query.wikidata.org/sparql'
     data = requests.get(url, params={'query': query, 'format': 'json'}).json()
@@ -69,4 +80,8 @@ for line in sys.stdin:
       for item in data['results']['bindings']:
         for var in item:
             sys.stdout.write("The " + search_property + " of " + search_object + " is ")
-            sys.stdout.write('{}.\n'.format(item[var]['value']))
+            sys.stdout.write('{}'.format(item[var]['value']))
+            if search_property in dictionary_units:
+                sys.stdout.write(' ' + dictionary_units.get(search_property) + '.\n')
+            else:
+                sys.stdout.write('.\n')
